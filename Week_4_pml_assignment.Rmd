@@ -1,0 +1,113 @@
+---
+title: "Practical Machine Learning Course Project"
+author: "Shreya Bansal"
+date: "24 October 2020"
+output:
+  html_document: default
+  word_document: default
+---
+Introduction
+
+I have made a project for the PML course using knitr and rstudio markdown.
+
+A brief overview
+
+I collected many databases from different bands for the purpose of analysing them for this project.
+
+Here, with the data from the acclmtr measure of the individuals of their respective classes of physical activity with the help of data, I predicted if a person is carrying out the exercises properly or not and the 2 files include both the test and training datasets, and from this I predicted the numbering pattern.
+I am loading data for the processing of the data & then I performed the main decomposition and then prediction for which model to finalise.
+
+
+```{r}
+library(caret)
+library(knitr)
+
+library(data.table)
+library(rpart.plot)
+library(rpart)
+
+library(gbm)
+library(ggplot2)
+
+library(corrplot)
+
+```
+Clean and perform Exploratory Analysis.
+
+```{r}
+t_url_ <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+tr___URL  <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+
+d___tst <- read.csv(url(t_url_))
+d_____TRAAA <- read.csv(url(tr___URL))
+
+
+```
+Clean input of data
+
+```{r}
+training___data <- d_____TRAAA[, colSums(is.na(d_____TRAAA)) == 0]
+testing___data <- d___tst[, colSums(is.na(d___tst)) == 0]
+```
+Prep all data for predcn., consider 70 percent of  data for that training set and remaining for testing data set
+& use testing_data for the prediction of the 20 cases...
+
+```{r}
+training___data <- training___data[, -c(1:7)]
+testing___data <- testing___data[, -c(1:7)]
+dim(training___data)
+```
+
+```{r}
+set.seed(1234)
+da_ta__trng <- createDataPartition(d_____TRAAA$classe, p = 0.7, list = FALSE)
+training___data <- training___data[da_ta__trng, ]
+testing___data <- training___data[-da_ta__trng, ]
+dim(training___data)
+dim(testing___data)
+```
+Next step is
+```{r}
+noneZero <- nearZeroVar(training___data)
+training___data <- training___data[, -noneZero]
+testing___data <- testing___data[, -noneZero]
+dim(training___data)
+dim(testing___data)
+```
+
+
+```{r}
+pc <- cor(training___data[, -53])
+corrplot(pc, order = "FPC", method = "color", type = "upper", tl.cex = 0.8, tl.col = rgb(0, 0, 0))
+```
+
+
+I proceeded for model building using 2 algos...
+
+```{r}
+set.seed(20000)
+trdc <- rpart(classe ~ ., data=training___data, method = "class")
+rpart.plot(trdc)
+```
+
+Validate... 
+```{r}
+mpreee <- predict(trdc, testing___data, type = "class")
+ab <- confusionMatrix(mpreee, testing___data$classe)
+ab
+```
+
+```{r}
+plot(mpreee)
+```
+
+APPLY 2 models
+
+```{r}
+set.seed(10000)
+c_G_B_M <- trainControl(method = "repeatedcv", number = 5, repeats = 1)
+V_G_B_M <- train(classe ~ .,data=training___data, method = "gbm", trControl = c_G_B_M, verbose = FALSE)
+V_G_B_M$finalModel
+```
+
+THE PROJECT IS COMPLETE, THANKS.
